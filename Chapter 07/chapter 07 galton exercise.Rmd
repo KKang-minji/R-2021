@@ -1,0 +1,103 @@
+---
+title: "chapter 07-1 exercise"
+author: "kangminji"
+date: '2021 4 29 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+<br>
+
+**가설설정**
+H0(귀무가설): 아버지 키가 한단 늘어날 때 아들의 키와 상관이 없다. 
+H1(대립가설): 아버지 키가 한단 늘어날 때 아들의 키와 상관이 있다.
+
+## Dalton
+## 아버지와 아들의 키의 회귀식을 구해보고 의미를 파악해보시오.
+```{r}
+library(dplyr)
+choose.files()
+galton <- read.csv("C:\\Workspace\\R\\maestro\\Galtons Height Data.csv")
+galton %>% head()
+galton %>% dim()
+```
+
+#### 남자만 필터링
+```{r}
+
+galton <- galton %>% 
+  filter(Gender=="M")
+galton %>% head()
+```
+
+
+#### 아빠와 아들 cm로 변환 하여 기존 데이터에 붙임
+```{r}
+galton<- galton %>% 
+mutate(father=Father*2.54,son=Height*2.54)
+
+```
+
+```{r}
+library(ggplot2)
+
+```
+
+#### 모델 적합 & plot
+```{r}
+gal_model <- lm(son~father, data=galton)
+coef(gal_model)  #회귀계수
+ggplot(galton,aes(father,son))+
+  geom_point(position = 'jitter', color='red')+
+  geom_abline(intercept = coef(gal_model)[1],slope = coef(gal_model),
+              color='darkblue',size=1)
+
+summary(gal_model)
+plot(son~father, data=galton)
+abline(gal_model, col="red")
+
+```
+Adjusted R-squared:  0.1513  => 모델이 적합하지 않다.
+p-vlaue가 0.05보다 훨씬 작으므로 유의미하다.
+
+     [ y= 0.44775 X + 97.17764 ]
+아들의 키 = 0.44775 * 아버지의 키 + 97.17764 
+=> 아버지의 키가 증가할때마다 아들의 키가 0.44775씩 증가한다.
+=> H1(대립가설)을 채택하고 H0(귀무가설)을 기각한다.
+
+  0.44775 * 170 + 97.17764 = 173.2951
+  0.44775 * 175+ 97.17764 = 175.5339
+  0.44775 * 180 + 97.17764 = 177.7726
+=> 아버지의 키를 175 기점으로 175이하면 아들의 키는 아버지보다 크고,
+                              175이상이면 아들의 키는 아버지보다 작다.
+                              
+                              
+                              
+```{r}
+par(mfrow=c(2,2))
+plot(gal_model)
+```
+- Residuals vs Fitted plot가 0을 중심으로 잘 모여있는 편이다. 모형 적합하다.
+- NormalQ-Q: 선형을 띄고 있음. 선형을 띄지않을때 log10()씌우면 선형모형을 띈다.
+- Residuals VS Leverage가 한쪽을 치우쳐져있으므로 모형 잘 적합해있다.
+
+
+#### 다차식 회귀
+```{r}
+x <- seq(min(galton$father), max(galton$father), length.out=1000)
+plot(jitter(galton$father), jitter(galton$son),
+     xlab='Father', ylab='Son')
+colors <- c('red','purple','darkorange','blue')
+for (i in 1:4) {
+    m <- lm(son ~ poly(father, i), data=galton)
+    assign(paste('m', i, sep='.'), m)
+    y <- predict(m, data.frame(father=x))
+    lines(x, y, col=colors[i], lwd=2)
+}
+anova(m.1, m.2, m.3, m.4)
+```
+ANOVA를 보면
+다차식회귀를 했을때  선형회귀를 했을때와 달리 p-value가 0.05보다 훨씬 커진것을 볼 수 있어 무의미하다.
+따라서 위의 회귀식보다 설명력이 떨어진다.

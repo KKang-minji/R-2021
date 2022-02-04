@@ -1,0 +1,107 @@
+---
+title: "Untitled1"
+author: "kangminji"
+date: '2021 4 29 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+단순선형회귀의 적용
+cars 데이터
+```{r}
+str(cars)  #속도, 제동거리 데이터
+plot(cars)
+```
+속도에 따른 제동거리
+x= 속도
+y=제동거리
+```{r}
+car_model <- lm(dist~speed, data = cars)
+coef(car_model)
+# dist = 3.932409 *speed - 17.579095
+plot(cars)
+abline(car_model, col='red')
+
+summary(car_model)
+
+```
+잔차 가장 작은것: -29.069, 가장큰것: 43.201 
+기울기가 3.9324 일때 0.00000000000149 대립가설 채택
+Adjusted R-squared:  0.6438 => 1과 가까우므로 모델 적합한 편
+
+```{r}
+par(mfrow=c(2,2))
+plot(car_model)
+```
+
+속도 21.5,제동거리는?
+```{r}
+new_s <- data.frame(speed=21.5)
+
+```
+
+
+# 고차식(polynomial) 적용하면 어떻게 될까?
+lm2 <- lm(dist~poly(speed,2), data=cars)
+plot(cars)
+x <- seq(4, 25, length.out=211)
+head(x)
+y <- predict(lm2, data.frame(speed=x))
+lines(x, y, col='purple', lwd=2)
+abline(car_model, col='red', lwd=2)
+
+summary(lm2)
+
+# cars 1차식부터 4차식까지
+```{r}
+x <- seq(4, 25, length.out=211)
+colors <- c('red','purple','darkorange','blue')
+plot(cars)
+for (i in 1:4) {
+    m <- lm(dist~poly(speed, i), data=cars)
+    assign(paste('m',i,sep='.'), m)
+    y <- predict(m, data.frame(speed=x))
+    lines(x, y, col=colors[i], lwd=2)
+}
+
+```
+
+
+# 분산 분석(anova)
+```{r}
+anova(m.1, m.2, m.3, m.4)
+```
+
+
+
+
+
+```{r}
+women
+plot(women)
+m <- lm(weight~height,data=women)
+m
+abline(m, col='red',lwd=2)
+summary(m)
+```
+
+2차식으로 모델링
+```{r}
+m2 <- lm(weight~poly(height, 2), data=women)
+x <- seq(58,72,length.out=300)
+y <- predict(m2,data.frame(height=x))
+plot(women)
+abline(m, col='red',lwd=2)
+lines(x,y,col='blue',lwd=2)
+summary(m2)
+```
+
+
+
+
+
+
+

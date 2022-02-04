@@ -1,0 +1,106 @@
+---
+title: "modeling"
+author: "kangminji"
+date: '2021 4 29 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+현실세계의 모델링
+```{r}
+X = c(3,6,9,12.)
+Y = c(3,4,5.5,6.5)
+plot(X,Y)
+```
+
+model 1: y=0.5x+1.0
+```{r}
+Y1 = 0.5*X + 1.0
+Y1
+```
+
+평균 제곱 오차: Mean Squared Error
+```{r}
+(Y-Y1)**2
+sum((Y-Y1)**2)
+MSE <- sum((Y-Y1)**2) /length(Y)
+MSE
+```
+
+model 2: y=5/12x+7/4
+```{r}
+Y2 = 5*X/12+7/4
+Y2
+MSE2 <- sum((Y-Y2)**2)/length(Y)
+MSE2
+```
+
+R의 단순 선형회귀 모델 lm
+```{r}
+model <- lm(Y ~ X)
+model
+# y=0.4x+1.75가 최적의 모델이다.
+
+plot(X,Y)
+abline(model, col='red')
+fitted(model)
+mse_model <- sum((Y-fitted(model))**2)/length(Y)
+mse_model
+```
+
+잔차- Residuals
+```{r}
+residuals(model)  #잔차: 예측값(예측선)과 실제값의 차이
+
+```
+
+잔차 제곱합
+```{r}
+deviance(model)   # = sum((Y-fitted(model))**2)
+```
+
+평균제곱오차(MSE)
+```{r}
+deviance(model)/length(Y)
+
+summary(model)
+```
+
+예측
+```{r}
+newX <- data.frame(X=c(1.2,2.0,20.65))
+newX 
+newY <- predict(model,newdata=newX)
+newY
+```
+#연습문제1
+```{r}
+x = c(10.0,12.0,9.5,22.2,8.0)
+y = c(360.2,420.0,359.5,679.0,315.3)
+
+mm <- lm(y ~ x)
+
+plot(x,y)
+abline(mm,col='red')
+
+summary(mm)
+mse_model <- sum((y-fitted(mm))**2)/length(y)
+mse_model
+deviance(mm)/length(y)
+
+# 예측
+newx <- data.frame(x = c(10.5,25.0,15.0))
+newy <- predict(mm,newdata = newx)
+newy
+
+plot(newx$x, newy, pch=2)
+abline(mm,col='red')
+```
+
+
+
+
+

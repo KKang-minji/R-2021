@@ -1,0 +1,172 @@
+---
+title: "Multiple Linear Regression Analysis"
+author: "kangminji"
+date: '2021 4 30 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+영희의 물리실험
+```{r}
+#install.packages('scatterplot3d')
+library(scatterplot3d)
+```
+
+```{r}
+x <- c(3,6,3,6.)
+u <- c(10,10,20,20.)
+y <- c(4.65,5.9,6.7,8.02)
+
+scatterplot3d(x,u,y,
+              xlim=2:7,ylim=7:23,zlim=0:10,
+              pch=20,type='h')
+```
+
+```{r}
+model <- lm(y~x+u)          #y = f(x,u)
+coef(model)                 #y = 0.4283333*x + 0.2085000*u + 1.2625000
+
+s <- scatterplot3d(x,u,y,
+              xlim=2:7,ylim=7:23,zlim=0:10,
+              pch=20,type='h')
+s$plane3d(model)
+```
+잔차
+```{r}
+fitted(model)
+y
+residuals(model)              # y - fitted(model)
+
+```
+
+평균제곱오차(MSE)
+```{r}
+mse = deviance(model)/length(y)
+mse
+```
+
+새로운 데이터에 대한 예측
+```{r}
+nx <-  c(7.5,5)
+nu <-  c(15,12.)
+new_data <- data.frame(x=nx,u=nu)
+ny <- predict(model, new_data)
+ny
+s <- scatterplot3d(nx,nu,ny,
+              xlim=0:10,ylim=7:23,zlim=0:10,
+              pch=20,type='h', color='red')
+s$plane3d(model)
+
+summary(model)
+```
+
+tree 데이터
+```{r}
+head(trees)
+dim(trees)
+summary(trees)
+scatterplot3d(trees$Girth,trees$Height,trees$Volume)
+
+```
+
+모델링
+```{r}
+tm <- lm(Volume ~ Girth + Height, data=trees)
+tm
+summary(tm)
+```
+
+예측
+```{r}
+ndata <- data.frame(Girth=c(8.5,13,19),Height=c(72,86,85.))
+predict(tm,ndata)
+```
+
+다중회귀분석
+```{r}
+state.x77
+head(state.x77)
+states <- as.data.frame(state.x77[, c("Murder","Population","Illiteracy","Income","Frost")])
+
+fit <- lm(Murder ~Population+Illiteracy+Income+Frost,data=states)
+summary(fit)
+#Illiteracy는 유의미, Income과 Frost는 연관이 별로 없다고 나옴
+
+par(mfrow=c(2,2))
+plot(fit)
+par(mfrow=c(1,1))
+```
+
+다중공선성: 독립변수가 강한 상관관계가 나타나는 문제
+correlation (0.9이상이면 다중공선성 의심)
+```{r}
+states.cor <- cor(states[2:5])
+states.cor
+```
+
+VIF 계산 (10이상이면 다중공선성 의심)
+```{r}
+#install.packages('car')
+library(car)
+vif(fit)
+
+
+```
+
+
+condition Number (15이상이면 다중공선성의 가능성이 있음)
+```{r}
+eigen.val <- eigen(states.cor)$values
+sqrt(max(eigen.val)/eigen.val)
+```
+
+```{r}
+fit1 <- lm(Murder~.,data=states)
+summary(fit1)
+
+#유의한 애들만 뽑아옴
+fit2 <- lm(Murder~Population+Illiteracy, data = states)
+summary(fit2)
+```
+
+AIC
+```{r}
+AIC(fit1,fit2)  #값이 적을수록 좋은 모델
+```
+
+bakward stepwise regression, Forward stepwise regression (변수선택법)
+```{r}
+step(fit1, direction = 'backward')
+```
+
+```{r}
+fit3 <- lm(Murder~1, data=states)    #~1: Murder만 뽑아와라
+step(fit3, direction='forward',      #direction=: 변수선택방법
+     scope=~Population+Illiteracy+Frost)   #scope: 변수늘리는것
+step(fit3, direction = 'forward',scope=list(upper=fit1,lower=fit3))
+#범위는 단일 포뮬러 또는 하한과 상한을 lower, upper로
+
+summary(fit3)
+```
+
+```{r}
+#install.packages('leaps')
+library(leaps)
+subsets <- regsubsets(Murder~., data=states,
+                      method='seqrep',nbest=4)
+sugsets <- regsubsets(Murder~., data=states,
+                      method='exhaustive',nbest=4)
+summary(subsets)            #*: 독립변수선정 표시
+plot(subsets)
+```
+
+##보스턴 주택가격 참고
+
+
+
+
+
+
