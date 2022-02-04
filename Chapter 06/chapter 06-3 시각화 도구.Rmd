@@ -1,0 +1,185 @@
+---
+title: "visualization tool"
+author: "kangminji"
+date: '2021 4 27 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 시각화 도구
+```{r}
+library(ggplot2)
+library(dplyr)
+library(gapminder)
+
+```
+
+1. plot
+```{r}
+head(cars)
+plot(cars, type = 'p', main = 'cars')   #'p':point
+plot(cars, type = 'l', main = 'cars')   #'l': line
+plot(cars, type = 'b', main = 'cars')   #'b': both
+plot(cars, type = 'h', main = 'cars')   #'h': histogram과 비슷한 막대 그래프
+```
+2. pie& baplot
+```{r}
+x = gapminder %>% 
+  filter(year == 1952 & continent == "Asia") %>% 
+  mutate(gdp = gdpPercap*pop) %>% 
+  select(country, gdp) %>%  # 나라만
+  arrange(desc(gdp)) %>% #gdp내림차순 순서대로
+  head()
+x
+pie(x$gdp,x$country)
+barplot(x$gdp, names.arg = x$country) 
+#names.arg:이름을 무슨 변수로 지정할 것인가
+```
+
+```{r}
+x = gapminder %>% 
+  filter(year == 2007 & continent == "Asia") %>% 
+  mutate(gdp = gdpPercap*pop) %>% 
+  select(country, gdp) %>%  # 나라만
+  arrange(desc(gdp)) %>% #gdp내림차순 순서대로
+  head()
+x
+pie(x$gdp,x$country)
+barplot(x$gdp, names.arg = x$country) 
+#names.arg:이름을 무슨 변수로 지정할 것인가
+```
+3. matplot
+```{r}
+library(ggplot2)
+matplot(iris[,1:4], type = 'l')
+legend('topleft',
+       names(iris)[1:4],
+       lty = c(1:4),       #lty: line type
+       col = c(1:4))
+
+```
+4. hist- 히스토그램
+```{r}
+hist(cars$speed)
+hist(iris$Sepal.Length)
+```
+## ggplot2 라이브러리
+1. geom_histogram
+```{r}
+library(gapminder)
+gapminder %>% names()
+gapminder %>% 
+  filter(year==2007) %>% 
+  ggplot(aes(lifeExp, col=continent)) +    #col=continent: 범례별 색깔
+  geom_histogram()
+
+gapminder %>% 
+  filter(year==2007) %>% 
+  ggplot(aes(lifeExp, col=continent)) +    #col=continent: 범례별 색깔
+  geom_histogram(position = 'dodge')
+```
+2. geom_boxplot
+```{r}
+gapminder %>% 
+  filter(year == 2007) %>% 
+  ggplot(aes(continent, lifeExp, col=continent)) +
+  geom_boxplot()
+```
+3. scale_x_log10(), scale_y_log10()
+```{r}
+ggplot(gapminder,aes(gdpPercap,lifeExp, col=continent))+
+  geom_point(alpha=0.2)
+#펼쳐보이게 하기
+ggplot(gapminder,aes(gdpPercap,lifeExp, col=continent))+
+  geom_point(alpha=0.2)+
+  scale_x_log10()
+```
+4. coord_flip()
+```{r}
+gapminder %>% 
+  filter(continent=='Africa') %>% 
+  ggplot(aes(country,lifeExp))+
+  geom_bar(stat = 'identity')
+
+gapminder %>% 
+  filter(continent=='Africa') %>% 
+  ggplot(aes(country,lifeExp, col=country))+
+  geom_bar(stat = 'identity')+
+  coord_flip()
+```
+5. scale_fill_brewer()
+```{r}
+library(RColorBrewer)
+display.brewer.all()
+```
+기본 팔레트
+Spectral palette
+```{r}
+gapminder %>% 
+  filter(lifeExp >70) %>% 
+  group_by(continent) %>% 
+  summarise(n=n_distinct(country)) %>% 
+  ggplot(aes(continent,n)) +
+  geom_bar(stat='identity', aes(fill=continent)) +
+  scale_fill_brewer(palette='Spectral')
+```
+biue palette
+```{r}
+gapminder %>% 
+  filter(lifeExp >70) %>% 
+  group_by(continent) %>% 
+  summarise(n=n_distinct(country)) %>% 
+  ggplot(aes(continent,n)) +
+  geom_bar(stat='identity', aes(fill=continent)) +
+  scale_fill_brewer(palette='Blues')
+```
+RdBu palette
+```{r}
+gapminder %>% 
+  filter(lifeExp >70) %>% 
+  group_by(continent) %>% 
+  summarise(n=n_distinct(country)) %>%  
+                    #n_distinct: 벡터 중에서 unique한 데이터의 개수를 알려줌,
+                                #변수의 고유한 범주들의 갯수를 알려줌
+  ggplot(aes(continent,n)) +
+  geom_bar(stat='identity', aes(fill=continent)) +
+  scale_fill_brewer(palette='RdBu')
+```
+## 그래프 표시 순서
+    reorder(정렬하고 싶은 변수, 연속형 데이터, function)
+    여기서 '정렬하고 싶은 변수'는 factor 형태이어야 합니다. 주의!
+```{r}
+gapminder %>% 
+  filter(lifeExp >70) %>% 
+  group_by(continent) %>% 
+  summarise(n=n_distinct(country)) %>% 
+  ggplot(aes(reorder(continent,n),n)) +        #오름차순으로 그려주는것
+  geom_bar(stat='identity', aes(fill=continent)) +
+  scale_fill_brewer(palette='Blues')
+
+gapminder %>% 
+  filter(lifeExp >70) %>% 
+  group_by(continent) %>% 
+  summarise(n=n_distinct(country)) %>% 
+  ggplot(aes(reorder(continent,-n),n)) +      #내림차순으로 그려주는것
+  geom_bar(stat='identity', aes(fill=continent)) +
+  scale_fill_brewer(palette='Blues')
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

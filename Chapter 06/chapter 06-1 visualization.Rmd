@@ -1,0 +1,54 @@
+---
+title: "visualization"
+author: "kangminji"
+date: '2021 4 27 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+apply(anscombe,2,mean)     #2: 열방향
+apply(anscombe,2, var)
+
+#평균, 분산 값이 같음
+```
+상관관계
+```{r}
+cor(anscombe$x1,anscombe$y1)
+cor(anscombe$x2,anscombe$y2)
+cor(anscombe$x3,anscombe$y3)
+cor(anscombe$x4,anscombe$y4)
+```
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

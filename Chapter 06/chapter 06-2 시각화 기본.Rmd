@@ -1,0 +1,97 @@
+---
+title: "visualization basic"
+author: "kangminji"
+date: '2021 4 27 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(gapminder)
+library(ggplot2)
+library(dplyr)
+```
+
+
+## 시각화 기본기능
+1. 비교/순위
+```{r}
+gapminder %>% 
+  filter(continent=='Asia'&year==1952) %>% 
+  ggplot(aes(country,pop),pop) +  #reorder 안쓰면 정렬은 안됨
+  geom_bar(stat='identity') +
+  coord_flip()
+
+gapminder %>% 
+  filter(continent=='Asia'&year==1952) %>% 
+  ggplot(aes(reorder(country,pop),pop)) +  #reorder 사용하면 정렬 기능
+  geom_bar(stat='identity') +
+  coord_flip()
+```
+
+2. 비교/순위 - 로그 스케일
+```{r}
+gapminder %>% 
+  filter(continent=='Asia'&year==1952) %>% 
+  ggplot(aes(reorder(country,pop),pop)) + 
+  geom_bar(stat='identity') +
+  scale_y_log10() +   #log10: 지수함수
+  coord_flip()
+```
+
+
+
+3. 변화추세
+```{r}
+gapminder %>% 
+  filter(country=='Korea, Rep.') %>% 
+  ggplot(aes(year,lifeExp, col='country')) +
+  geom_point() +
+  geom_line()
+```
+
+#4. 여러 데이터의 변화 추세
+```{r}
+gapminder %>% 
+  ggplot(aes(year,lifeExp,col=continent)) +
+  geom_point(alpha=0.2) +
+  geom_smooth() #평균을 구해줌
+
+
+ggplot(gapminder,aes(year,lifeExp,col=continent)) +
+  geom_point(alpha=0.2) +
+  geom_smooth()
+```
+
+5. 분포- 히스토그램
+```{r}
+x <- filter(gapminder, year == 1952)
+hist(x$lifeExp, main = 'Histogram of lifeExp in 1952')
+
+x %>% 
+  ggplot(aes(lifeExp))+
+  geom_histogram()
+```
+6. 대륙별 세분화된 분포 특성 - boxplot
+```{r}
+x %>% 
+  ggplot(aes(continent, lifeExp))+
+  geom_boxplot()
+```
+7. 상관 관계
+log () 함수와 마찬가지로 log10 () 함수도 숫자 입력을 받아 동일한 로그 값을 계산합니다
+```{r}
+plot(log10(gapminder$gdpPercap), gapminder$lifeExp) 
+#진할수록 양의 상관관계, 비례한다.
+```
+
+
+
+
+
+
+
+
