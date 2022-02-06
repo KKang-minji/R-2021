@@ -1,0 +1,322 @@
+---
+title: "chapter09 exercise"
+author: "kangminji"
+date: '2021 5 3 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library(rpart)
+library(caret)
+library(rpart.plot)
+```
+## ucla
+##### 1. 의사결정나무
+```{r}
+ucla <-  read.csv('https://stats.idre.ucla.edu/stat/data/binary.csv')
+str(ucla)
+head(ucla)
+ucla$admit <- factor(ucla$admit)
+dtc1 <- rpart(admit~., ucla)
+dtc1
+```
+
+예측
+```{r}
+pred1 <- predict(dtc1, ucla, type="class")
+table(pred1, ucla$admit)
+```
+평가
+```{r}
+library(caret)
+
+confusionMatrix(pred1,ucla$admit)
+```
+
+```{r}
+set.seed(2021)
+ucla_index <- sample(1:nrow(ucla),0.8*nrow(ucla))
+ucla_train <- ucla[ucla_index,]
+ucla_test <- ucla[-ucla_index,]
+# = iris_test <- iris[-iris_index,]
+dim(ucla_train)
+dim(ucla_test)
+table(ucla_train$admit)  #샘플링의 한계
+table(ucla_test$admit)
+```
+
+모델링
+```{r}
+dtc1 <- rpart(admit~., ucla_train)
+```
+예측
+```{r}
+pred1 <- predict(dtc1, ucla_test, type='class')
+```
+평가
+```{r}
+confusionMatrix(pred1,ucla_test$admit)
+# Accuracy :0.6375 
+```
+시각화
+```{r}
+par(mfrow=c(1,1),xpd=NA)   # 그래프에 글자가 다 나오게 함
+plot(dtc1)
+text(dtc1, use.n = T)
+```
+
+
+#### 2. 랜덤포레스트
+```{r}
+library(caret)
+#install.packages("randomForest")
+library(randomForest)
+```
+
+```{r}
+set.seed(2021)
+train_index2 <- createDataPartition(ucla$admit,p=0.8,list=F)
+ucla_train2 <- ucla[train_index2,]
+str(ucla_train2)
+
+ucla_test2 <- ucla[-train_index2,]
+
+
+```
+모델링/학습
+```{r}
+rf <- randomForest(admit ~ ., ucla_train2)
+rf
+```
+예측
+```{r}
+pred2 <- predict(rf, ucla_test2, type='class')
+```
+
+평가
+```{r}
+confusionMatrix(pred2, ucla_test2$admit)
+plot(rf)
+```
+```{r}
+
+```
+
+#### 3. 서포트백터머신
+```{r}
+library(caret)
+library(e1071)
+```
+
+```{r}
+set.seed(2021)
+train_index3 <- createDataPartition(ucla$admit,p=0.8,list=F)
+ucla_train <- ucla[train_index3,]
+ucla_test <- ucla[-train_index3,]
+```
+모델링
+```{r}
+svc1 <- svm(admit~., ucla_train)
+```
+예측
+```{r}
+pred3 <- predict(svc1, ucla_test, type='class')
+```
+평가
+```{r}
+table(pred3, ucla_test$admit)
+confusionMatrix(pred3, ucla_test$admit)
+```
+하이퍼 파라미터(cost)
+```{r}
+svc_100 <- svm(admit~., ucla_train, cost=100)
+pred_100 <- predict(svc_100, ucla_test, type='class')
+table(pred_100, ucla_test$admit)
+
+svc_001 <- svm(admit~., ucla_train, cost=0.01)
+pred_001 <- predict(svc_001, ucla_test, type='class')
+table(pred_001, ucla_test$admit)
+```
+모델을 훈련했을 때의 데이터로 예측
+```{r}
+self_100 <- predict(svc_100, ucla_train, type='class')
+table(self_100, ucla_train$admit)
+
+self_001 <- predict(svc_001, ucla_train, type='class')
+table(self_001, ucla_train$admit)
+```
+
+#### 4. K-NN(Nearest Neighbor) - K-최근접 이웃 
+```{r}
+library(class)
+k <- knn(ucla_train[, 1:4], ucla_test[, 1:4], 
+         ucla_train$admit, k=5)
+k
+ucla_test$admit
+confusionMatrix(k, ucla_test$admit)
+```
+
+# train 함수
+```{r}
+dt <- train(admit~., ucla_train, method='rpart')
+rf <- train(admit~., ucla_train, method='rf')
+sv <- train(admit~., ucla_train, method='svmRadial')
+kn <- train(admit~., ucla_train, method='knn')
+
+names(getModelInfo())
+```
+
+## wine
+```{r}
+wine <- read.table('C:\\Workspace\\R\\maestro\\data\\wine.data.txt', header=F, sep =",")
+names(wine) <- c("target","Alcohol","Malicacid","Ash","Alcalinityofash",
+                  "Magnesium","Totalphenols","Flavanoids","Nonflavanoidphenols",
+                  "Proanthocyanins","Colorintensity","Hue","OD280OD315ofdilutedwines",
+                  "Proline")
+#columns <- readLines('data/wine.name.txt')
+#names(wine)[2:14] <- columns
+#names(wine)
+wine
+str(wine)
+head(wine)
+
+```
+
+
+
+##### 1. 의사결정나무
+```{r}
+wine$target <- factor(wine$target)
+dtc1_1 <- rpart(target~., wine)
+dtc1_1
+```
+
+예측
+```{r}
+pred1_1 <- predict(dtc1_1, wine, type="class")
+table(pred1_1, wine$target)
+```
+평가
+```{r}
+library(caret)
+
+confusionMatrix(pred1_1,wine$target)
+```
+
+```{r}
+set.seed(2021)
+wine_index <- sample(1:nrow(wine),0.8*nrow(wine))
+wine_train <- wine[wine_index,]
+wine_test <- wine[-wine_index,]
+# = iris_test <- iris[-iris_index,]
+dim(wine_train)
+dim(wine_test)
+table(wine_train$target)  #샘플링의 한계
+table(wine_test$target)
+```
+
+모델링
+```{r}
+dtc_1 <- rpart(target~., wine_train)
+```
+예측
+```{r}
+pred_1 <- predict(dtc_1, wine_test, type='class')
+```
+평가
+```{r}
+confusionMatrix(pred_1,wine_test$target)
+# Accuracy :0.6375 
+```
+
+#### 2. 랜덤포레스트
+```{r}
+library(caret)
+#install.packages("randomForest")
+library(randomForest)
+```
+
+```{r}
+set.seed(2021)
+train_index2_2 <- createDataPartition(wine$target,p=0.8,list=F)
+wine_train2 <- wine[train_index2_2,]
+wine_test2 <- wine[-train_index2_2,]
+```
+모델링/학습
+```{r}
+rf_1 <- randomForest(target~., wine_train2)
+rf_1
+```
+예측
+```{r}
+pred2 <- predict(rf_1, wine_test2, type='class')
+```
+
+평가
+```{r}
+confusionMatrix(pred2, wine_test2$target)
+plot(rf_1)
+```
+
+#### 3. 서포트백터머신
+```{r}
+library(caret)
+library(e1071)
+```
+
+```{r}
+set.seed(2021)
+train_index3 <- createDataPartition(wine$target,p=0.8,list=F)
+wine_train <- wine[train_index3,]
+wine_test <- wine[-train_index3,]
+```
+모델링
+```{r}
+svc2 <- svm(target~., wine_train)
+```
+예측
+```{r}
+pred_3 <- predict(svc2, wine_test, type='class')
+```
+평가
+```{r}
+table(pred_3, wine_test$target)
+confusionMatrix(pred_3, wine_test$target)
+```
+하이퍼 파라미터(cost)
+```{r}
+svc100 <- svm(target~., wine_train, cost=100)
+pred100 <- predict(svc100, wine_test, type='class')
+table(pred100, wine_test$target)
+
+svc001 <- svm(target~., wine_train, cost=0.01)
+pred001 <- predict(svc001, wine_test, type='class')
+table(pred001, wine_test$target)
+```
+모델을 훈련했을 때의 데이터로 예측
+```{r}
+self100 <- predict(svc100, wine_train, type='class')
+table(self100, wine_train$target)
+
+self001 <- predict(svc001, wine_train, type='class')
+table(self001, wine_train$target)
+```
+
+#### 4. K-NN(Nearest Neighbor) - K-최근접 이웃 
+```{r}
+library(class)
+k_w <- knn(wine_train[, 1:4], wine_test[, 1:4], 
+         wine_train$target, k=5)
+k_w
+wine_test$train
+confusionMatrix(k_w, wine_test$target)
+```
+
+
+
+

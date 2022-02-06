@@ -1,0 +1,80 @@
+---
+title: "Decision tree"
+author: "kangminji"
+date: '2021 5 3 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+분류(classification)
+결정트리(Decision tree)
+```{r}
+library(rpart)
+head(iris)
+dtc <- rpart(Species~., iris)   #iris 데이터를 결정 트리로 학습
+summary(dtc)
+dtc
+```
+결정 트리 시각화
+```{r}
+par(mfrow=c(1,1), xpd=NA)   #글자 다나오게 함
+plot(dtc)
+text(dtc, use.n=T)
+```
+예측
+```{r}
+pred <- predict(dtc, iris, type = 'class')
+table(pred,iris$Species)
+#150개중 setosa 다맞음. versicolor 49개, virginica 45개 맞춤.
+#정확도: (50+49+45)/150
+```
+
+평가
+```{r}
+#install.packages("caret")
+library(caret)
+confusionMatrix(pred,iris$Species)
+# Accuracy : 0.96
+```
+
+
+```{r}
+#install.packages('rpart.plot')
+library(rpart.plot)
+rpart.plot(dtc)
+rpart.plot(dtc, type=4)
+```
+
+훈련셋, 테스트셋으로 분리하여 시행
+```{r}
+set.seed(2021)
+iris_index <- sample(1:nrow(iris),0.8*nrow(iris))
+iris_train <- iris[iris_index,]
+iris_test <- iris[setdiff(1:nrow(iris), iris_index),]
+# = iris_test <- iris[-iris_index,]
+dim(iris_train)
+dim(iris_test)
+table(iris_train$Species)  #샘플링의 한계
+table(iris_test$Species)
+```
+
+모델링
+```{r}
+dtc <- rpart(Species~., iris_train)
+```
+예측
+```{r}
+pred <- predict(dtc, iris_test, type='class')
+```
+평가
+```{r}
+confusionMatrix(pred,iris_test$Species)
+# Accuracy : 0.9 
+```
+
+
+
+
