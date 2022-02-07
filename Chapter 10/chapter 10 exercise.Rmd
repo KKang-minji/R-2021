@@ -1,0 +1,146 @@
+---
+title: "chapter 10 exercise"
+author: "kangminji"
+date: '2021 5 4 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+<br>
+## 단원문제
+```{r}
+library(randomForest)
+library(caret)
+```
+
+#### 1. colon 데이터에 랜덤 포리스트를 적용하는데, k-겹 교차 검증을 k를 5,10,15,20으로 바꾸면서 적용하라. 각각의 혼동 행렬과 정확률을 제시하라.
+```{r}
+#install.packages("survival")
+library(survival)
+colon= na.omit(colon)
+colon=colon[c(TRUE,FALSE),]
+colon$status=factor(colon$status)
+
+control_5 <-trainControl(method = 'cv', number=5)       # 5-겹 교차 검증 지정
+rf_5 <- train(status~., data= colon, method='rf',   
+                metric='Accuracy', trControl=control_5) 
+
+control_10 <-trainControl(method = 'cv', number=10)       # 5-겹 교차 검증 지정
+rf_10 <- train(status~., data= colon, method='rf',   
+                metric='Accuracy', trControl=control_10) 
+
+control_15 <-trainControl(method = 'cv', number=15)       # 5-겹 교차 검증 지정
+rf_15 <- train(status~., data= colon, method='rf',   
+                metric='Accuracy', trControl=control_15) 
+
+control_20 <-trainControl(method = 'cv', number=20)       # 5-겹 교차 검증 지정
+rf_20 <- train(status~., data= colon, method='rf',   
+                metric='Accuracy', trControl=control_20) 
+
+confusionMatrix(rf_5)   #Accuracy (average) : 0.9414
+confusionMatrix(rf_10)  #Accuracy (average) : 0.9505 
+confusionMatrix(rf_15)  #Accuracy (average) : 0.9437
+confusionMatrix(rf_20)  #Accuracy (average) : 0.9505
+confusionMatrix(rf_5)   #Accuracy (average) : 0.9414
+
+#5겹 교차검증 정밀도, 재현도
+confusionMatrix(rf_5)$table[2,2]/(confusionMatrix(rf_5)$table[2,1]+confusionMatrix(rf_5)$table[2,2])
+confusionMatrix(rf_5)$table[2,2]/(confusionMatrix(rf_5)$table[1,2]+confusionMatrix(rf_5)$table[2,2]) 
+
+#10겹 교차검증 정밀도, 재현도
+confusionMatrix(rf_10)$table[2,2]/(confusionMatrix(rf_10)$table[2,1]+confusionMatrix(rf_10)$table[2,2]) 
+confusionMatrix(rf_10)$table[2,2]/(confusionMatrix(rf_10)$table[1,2]+confusionMatrix(rf_10)$table[2,2]) 
+
+#15겹 교차검증 정밀도, 재현도
+confusionMatrix(rf_15)$table[2,2]/(confusionMatrix(rf_15)$table[2,1]+confusionMatrix(rf_15)$table[2,2])  
+confusionMatrix(rf_15)$table[2,2]/(confusionMatrix(rf_15)$table[1,2]+confusionMatrix(rf_15)$table[2,2]) 
+
+#20겹 교차검증 정밀도, 재현도
+confusionMatrix(rf_20)$table[2,2]/(confusionMatrix(rf_20)$table[2,1]+confusionMatrix(rf_20)$table[2,2]) 
+confusionMatrix(rf_20)$table[2,2]/(confusionMatrix(rf_20)$table[1,2]+confusionMatrix(rf_20)$table[2,2]) 
+```
+5-겹 교차 검증  
+  - True Positive: 49.5, False Positive: 4.1, False NEgative: 1.8, True Negative: 44.6
+  - Accuracy (average) : 0.9414
+  - pricision(정밀도): 0.9776675
+  - Recall(재현도): 0.9162791
+  
+10-겹 교차 검증 
+  - True Positive: 50.2, False Positive: 3.8, False NEgative: 1.1, True Negative: 44.8
+  - Accuracy (average) : 0.9505
+  - pricision(정밀도): 0.9708029
+  - Recall(재현도):0.927907
+  
+15-겹 교차 검증  
+  - True Positive: 49.3, False Positive: 3.6, False NEgative: 2.0, True Negative: 45.0
+  - Accuracy (average) : 0.9437
+  - pricision(정밀도): 0.9801489
+  - Recall(재현도):0.9186047
+  
+20-겹 교차 검증   
+  - True Positive: 50.2, False Positive: 3.8, False NEgative: 1.1, True Negative: 44.8
+  - Accuracy (average) : 0.9505
+  - pricision(정밀도): 0.9801489
+  - Recall(재현도):0.9186047
+  
+
+
+#### 2. 353~356쪽의 과정을 UCLA admission 데이터에 대해 수행하라.
+```{r}
+ucla <-  read.csv('https://stats.idre.ucla.edu/stat/data/binary.csv')
+ucla$admit <- factor(ucla$admit)
+control_u <-trainControl(method = 'cv', number=10) 
+folmular_u= admit~.
+L_u= train(folmular_u, data=ucla, method='svmLinear', metric='Accuracy', trControl=control_u)
+LW_u= train(folmular_u, data=ucla, method='svmLinearWeights', metric='Accuracy', trControl=control_u)
+P_u= train(folmular_u, data=ucla, method='svmPoly', metric='Accuracy', trControl=control_u)
+R_u= train(folmular_u, data=ucla, method='svmRadial', metric='Accuracy', trControl=control_u)
+RW_u= train(folmular_u, data=ucla, method='svmRadialWeights', metric='Accuracy', trControl=control_u)
+f100=train(folmular_u, data=ucla, method='rf', ntree=100, metric='Accuracy', trControl=control_u)
+f300=train(folmular_u, data=ucla, method='rf', ntree=300, metric='Accuracy', trControl=control_u)
+f500=train(folmular_u, data=ucla, method='rf', ntree=500, metric='Accuracy', trControl=control_u)
+r_u= train(folmular_u, data=ucla, method='rpart', metric='Accuracy', trControl=control_u)
+k_u= train(folmular_u, data=ucla, method='knn', metric='Accuracy', trControl=control_u)
+g_u= train(folmular_u, data=ucla, method='glm', metric='Accuracy', trControl=control_u)
+
+resamp_u= resamples(list(선형=L_u, 선형가중치=LW_u, 다항식=P_u, RBF=R_u, 가중치=RW_u, rf100=f100, rf300=f300, rf500=f500, tree=r_u, knn=k_u, glm=g_u))
+summary(resamp_u)
+
+#가장 좋은 모델 순서로 뽑기
+sort(resamp_u, dcreasing=TRUE)
+#모델 성능 시각화
+dotplot(resamp_u)
+```
+
+#### 3. 353~356쪽의 과정을 voice 데이터에 대해 수행하라.
+```{r}
+voice= read.csv('C:\\Workspace\\R\\maestro\\data\\voice.csv')
+str(voice)
+voice$label=factor(voice$label)
+
+control_v <-trainControl(method = 'cv', number=10) 
+folmular_v= label~.
+L_v= train(folmular_v, data=voice, method='svmLinear', metric='Accuracy', trControl=control_v)
+LW_v= train(folmular_v, data=voice, method='svmLinearWeights', metric='Accuracy', trControl=control_v)
+P_v= train(folmular_v, data=voice, method='svmPoly', metric='Accuracy', trControl=control_v)
+R_v= train(folmular_v, data=voice, method='svmRadial', metric='Accuracy', trControl=control_v)
+RW_v= train(folmular_v, data=voice, method='svmRadialWeights', metric='Accuracy', trControl=control_v)
+f_100=train(folmular_v, data=voice, method='rf', ntree=100, metric='Accuracy', trControl=control_v)
+f_300=train(folmular_v, data=voice, method='rf', ntree=300, metric='Accuracy', trControl=control_v)
+f_500=train(folmular_v, data=voice, method='rf', ntree=500, metric='Accuracy', trControl=control_v)
+r_v= train(folmular_v, data=voice, method='rpart', metric='Accuracy', trControl=control_v)
+k_v= train(folmular_v, data=voice, method='knn', metric='Accuracy', trControl=control_v)
+g_v= train(folmular_v, data=voice, method='glm', metric='Accuracy', trControl=control_v)
+
+resamp_v= resamples(list(선형=L_v, 선형가중치=LW_v, 다항식=P_v, RBF=R_v, 가중치=RW_v, rf100=f_100, rf300=f_300, rf500=f_500, tree=r_v, knn=k_v, glm=g_v))
+summary(resamp_v)
+
+#가장 좋은 모델 순서로 뽑기
+sort(resamp_v, dcreasing=TRUE)
+#모델 성능 시각화
+dotplot(resamp_v)
+```
+
+

@@ -1,0 +1,114 @@
+---
+title: "cross validation, model choice"
+author: "kangminji"
+date: '2021 5 4 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+K-Fold 교차검증(cross validation)
+```{r}
+library(caret)
+
+```
+
+iris 데이터 섞음
+```{r}
+set.seed(2021)
+data <- iris[sample(nrow(iris)),]
+head(data)
+tail(data)
+```
+
+k-fold CV, K=5 (반복문으로 구현하기)
+```{r}
+k <- 5
+q <- nrow(data)/k      #nrow: 행의 수
+l <- 1:nrow(data)
+acc <- 0
+
+for (i in 1:k) {
+  test_list <- ((i-1)*q+1):(i*q)    #1:30, 31:60, 61:90 ...
+  testData <- data[test_list,]
+  trainData <- data[-test_list,]
+  rf <- train(Species~.,trainData, method='rf')
+  pred <- predict(rf, testData)
+  t <- table(pred, testData$Species)
+  print((t[1,1]+t[2,2]+t[3,3])/nrow(testData))
+  acc <- acc + (t[1,1]+t[2,2]+t[3,3])/nrow(testData)
+}
+
+average_accuracy <- acc/k
+average_accuracy
+```
+
+
+##########################################################
+**caret library를 이용한 코드**
+```{r}
+control <-trainControl(method = 'cv', number=5)       # 5-겹 교차 검증 지정
+new_rf <- train(Species~., data= iris, method='rf',   
+                metric='Accuracy', trControl=control)  
+#method='rf':모델을 랜덤 포레스트로 사용해라.  
+#metric='Accuracy': 성능은 정확률로 측정하라.
+
+new_rf
+confusionMatrix(new_rf)
+```
+
+
+############################################################
+**4개의 모델에 적용**
+```{r}
+control <-trainControl(method = 'cv', number=5)
+dt <- train(Species~., data= iris, method='rpart',   
+                metric='Accuracy', trControl=control) 
+rf <- train(Species~., data= iris, method='rf',   
+                metric='Accuracy', trControl=control) 
+svm <- train(Species~., data= iris, method='svmRadial', 
+             metric='Accuracy', trControl=control) 
+knn <- train(Species~., data= iris, method='knn',   
+                metric='Accuracy', trControl=control) 
+
+resamp <- resamples(list(결정트리=dt, 랜덤포레스트=rf, SVM=svm, KNN=knn))
+summary(resamp)
+#가장좋은 모델 순으로 뽑기
+sort(resamp, decreasing = T)  
+#모델성능 시각화
+dotplot(resamp)
+```
+
+소문자로 시작: 변수,함수
+대문자로 시작: 객체, class
+
+
+5-겹 교차 검증  
+  - True Positive: 49.5, False Positive: 4.1, False NEgative: 1.8, True Negative: 44.6
+  - Accuracy (average) : 0.9414
+  - pricision(정밀도): 0.9776675
+  - Recall(재현도): 0.9162791
+  
+10-겹 교차 검증 
+  - True Positive: 50.2, False Positive: 3.8, False NEgative: 1.1, True Negative: 44.8
+  - Accuracy (average) : 0.9505
+  - pricision(정밀도): 0.9708029
+  - Recall(재현도):0.927907
+  
+15-겹 교차 검증  
+  - True Positive: 49.3, False Positive: 3.6, False NEgative: 2.0, True Negative: 45.0
+  - Accuracy (average) : 0.9437
+  - pricision(정밀도): 0.9801489
+  - Recall(재현도):0.9186047
+  
+20-겹 교차 검증   
+  - True Positive: 50.2, False Positive: 3.8, False NEgative: 1.1, True Negative: 44.8
+  - Accuracy (average) : 0.9505
+  - pricision(정밀도): 0.9801489
+  - Recall(재현도):0.9186047
+
+
+
+
