@@ -1,0 +1,44 @@
+---
+title: "KoNLP"
+author: "kangminji"
+date: '2021 5 7 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(KoNLP)
+useSejongDic()   #systemDic, NIADic
+```
+```{r}
+s <- '너에게 묻는다. 연탄재 함부로 발로 차지 마라. 너는 누구에게 한번이라도 뜨거운 사람이었느냐?'
+# 명사 추출
+extractNoun(s)
+# 형태소 분석
+SimplePos09(s)
+SimplePos22(s)
+
+nouns <- extractNoun(s)
+nouns 
+typeof(nouns)  #벡터라는 걸 알려줌
+
+
+ss <- c('너에게 묻는다.','연탄재 함부로 발로 차지 마라.','너는 누구에게 한번이라도 뜨거운 사람이었느냐?')  #벡터로 줌
+nouns <- extractNoun(ss) #리스트가 됨
+nouns <- unlist(nouns)  #다시 벡터로 만듦
+nouns
+```
+
+
+
+
+
+
+
+
+
+
+

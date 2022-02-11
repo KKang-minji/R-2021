@@ -1,0 +1,200 @@
+---
+title: "text mining"
+author: "kangminji"
+date: '2021 5 6 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+character로 형 변환
+```{r}
+example <- 1
+typeof(example)    #"double"=숫자
+example <- as.character(example)
+typeof(example)    #character
+```
+
+입력받는 경우
+```{r}
+input <- readline('Prompt> ')
+input
+i <- as.numeric(input)
+3*i
+```
+
+2. string 이어 붙이기
+```{r}
+paste('A','quick','brown','fox')           #"A quick brown fox"
+paste0('A','quick','brown','fox')          #"Aquickbrownfox"
+paste('A','quick','brown','fox',sep='-')   #"A-quick-brown-fox"
+s <- paste('A','quick','brown','fox',sep='-') 
+l <- str_split(s, '-')
+l[1]
+paste(l)
+paste(l,collapse = ' ')
+```
+
+
+```{r}
+library(stringr)
+paste('A','quick','brown','fox') # 기본적으로 공백이 달라 붙음 A quick brown fox
+paste0('A','quick','brown','fox') # 기본적으로 공백 없이 달라 붙음 Aquickbrownfox
+paste('A','quick','brown','fox',sep='-') # sep는 구분 기호, 디폴트는 공백 
+s <- paste('A','quick','brown','fox',sep='-')
+l <- str_split(s, '-') # 구분 기호에 따라 나눠줌
+paste(l)
+paste(l,collapse = " ")
+sample <- c('A','quick','brown','fox')
+paste(sample)                         #"A"     "quick" "brown" "fox"  
+paste(sample, collapse = ' ')         #"A quick brown fox"
+str_c(sample,'1', sep='_')  #각각 벡터에 대해서 _1를 붙인다
+str_c(sample, '1', sep='_', collapse='@@')  #string 이어붙이기
+``` 
+
+3. character 개수 카운트
+```{r}
+x <- 'Hello'
+nchar(x)
+h <- '안녕하세요'
+nchar(h)
+str_length(h)
+```
+
+4. 소문자 변환
+```{r}
+tolower(x)  #대문자 -> 소문자 (한글 해당사항 없음)
+```
+
+5. 대문자 변환
+```{r}
+toupper(x)
+```
+
+6. 2개의 character vector를 중복되는 항목없이 합하기
+```{r}
+str_1 <- c('Hello', 'world', 'r', 'program')
+str_2 <- c('hi','world', 'r', 'coding')
+union(str_1, str_2)
+```
+
+7. 2개의 character vector에서 공통된 항목 추출
+```{r}
+intersect(str_1,str_2)    #교집합
+```
+
+8. 차집합
+```{r}
+setdiff(str_1,str_2)    #str_1 - str_2
+```
+
+9. 2개의 character vector 동일 여부 확인(순서에 관계없이)
+```{r}
+str_3 <- c('r', 'hello', 'program', 'world')
+setequal(str_1,str_2)
+setequal(str_1,str_3)
+```
+
+10. 공백없애기
+```{r}
+vector1 <- c(' Hello World! ',' Hi R! ')
+str_trim(vector1, side = 'left')  #글자 앞부분 공백 없애줌
+str_trim(vector1, side = 'right') #글자 뒷부분 공백 없애줌
+str_trim(vector1, side = 'both')  #글자 앞뒤 공백 없애줌
+```
+
+11. string 반복해서 나타내기
+```{r}
+str_dup(x, 3)
+rep(x,3)
+# 둘이 비교해서 사용하기
+```
+
+12. substring(string의 일정 부분) 추출
+```{r}
+string_1 <- "Hello World"
+#다 똑같은 결과
+substr(string_1, 7,9)
+substring(string_1, 7,9)
+str_sub(string_1, 7,9)
+substr(string_1, 7)   #error
+substring(string_1,7)  #7번째부터 끝까지
+str_sub(string_1,7)    #7번째부터 끝까지
+str_sub(string_1,7, -1)   #-1은 끝까지
+str_sub(string_1,7, -3)   #-3은 뒤에서세번째까지
+string_1[7:9]
+```
+
+13. string의 특정위치에 있는 값 바꾸기(바꿀 단어개수 같아야함)
+```{r}
+string_1 <- "Today is Monday"
+substr(string_1, 10,12) <- 'sun'
+string_1
+substr(string_1,10,12) <- "Thurs"
+string_1                  #"Today is Thuday"  
+```
+
+14. 특정 패턴(문자열)을 기준으로 string 자르기
+```{r}
+strsplit(string_1, split = ' ')
+str_split(string_1, pattern = ' ')
+str_split(string_1, pattern = ' ', n=2)
+str_split(string_1, pattern = ' ', simplify = T)   # matrix
+s <- str_split(string_1, pattern = ' ')
+typeof(s)
+s[1]     #리스트
+s[[1]]   #벡터
+s[[1]][1]  #리스트 첫번째
+
+```
+
+#리스트를 벡터로 변환: unlist()
+```{r}
+unlist(s)
+paste(unlist(s), collapse = ' ') #벡터로 변환해서 붙임
+```
+
+15. 특정 패턴(문자열) 찾기(기본 fuction)
+```{r}
+vector_1 <- c("Xman","Superman","Joker")
+grep('man', vector_1)  #grep(pattern, input vector)
+grepl('man', vector_1)
+regexpr('man', vector_1)  #없으면 -1
+gregexpr('man', vector_1)
+```
+
+16. 특정 패턴(문자열) 찾기 (stringr package function) 
+```{r}
+fruit <- c("apple", "banana", "cherry")
+str_count(fruit, "a")  #a있는 개수
+str_detect(fruit, "a")
+str_locate(fruit, "a")       #하나씩만
+str_locate_all(fruit, "a")   #전체
+
+people <- c("rorori", "emilia", "youna")
+str_match(people, "o(\\D)")   #\\D는 숫자가 아닌 character를 의미
+
+```
+
+17. 특정 패턴(문자열) 찾아서 다른 패턴(문자열)으로 바꾸기
+```{r}
+fruits <- c("one apple", "two pears", "three bananas")
+#첫번째 a만 바꿈
+sub('a','A', fruits)    
+str_replace(fruits, "a", "A")
+#a라고 된것 전체 바꿈
+gsub("a", "A", fruits)
+str_replace_all(fruits, "a", "A")
+```
+
+
+
+
+
+
+
+
+
+

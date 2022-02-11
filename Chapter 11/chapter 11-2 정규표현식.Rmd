@@ -1,0 +1,22 @@
+---
+title: "Regular Expression"
+author: "kangminji"
+date: '2021 5 6 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+fruits <- c("1 apple", "2 pears", "3 bananas")
+# 소문자 모음
+str_match(fruits,'[aeiou]')
+str_match_all(fruits,'[aeiou]')
+# 숫자
+str_match(fruits, '\\d')   
+str_match(fruits, '[[:digit:]]')
+```
+
+

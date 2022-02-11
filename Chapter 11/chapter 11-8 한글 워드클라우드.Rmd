@@ -1,0 +1,79 @@
+---
+title: "Untitled"
+author: "kangminji"
+date: '2021 5 7 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+#wiki '빅데이터' 검색 결과 워드클라우드 만들기
+```{r}
+library(RCurl)
+library(XML)
+library(SnowballC)
+library(tm)
+library(wordcloud2)
+```
+
+```{r}
+enc <- URLencode(iconv('빅데이터', 'cp949', 'UTF-8'))
+enc
+url <- paste0('https://ko.wikipedia.org/wiki/', enc)
+url
+html <- readLines(url)
+html <- htmlParse(html, asText=T)
+doc <- xpathSApply(html,'//p',xmlValue)
+length(doc)
+doc[1]
+```
+
+전처리
+한글과 space만 남기고 다른 모든 글자를 지운다.
+```{r}
+hdoc <- gsub('[^ㄱ-ㅎ|ㅏ-ㅣ|가-힣 ]', '', doc)
+#^: not표시  #힣 뒤에 스페이스 해야함
+#한글, space 아닌것 -> ''로 만듦
+hdoc[1]
+```
+
+DTM - 한글의 조사 때문에 잘안됨
+```{r}
+corpus <- Corpus(VectorSource(hdoc))
+inspect(corpus)
+dtm <- DocumentTermMatrix(corpus)
+inspect(dtm)
+```
+
+한글 처리 후 작업을 해야함.
+```{r}
+library(KoNLP)
+useSejongDic()
+nouns <- extractNoun(hdoc)
+
+
+noun_freq <- table(unlist(nouns))
+noun_freq[1:10]
+v <- sort(noun_freq, decreasing = T)
+v100 <- v[1:100]
+wordcloud2(v100)
+
+```
+한글 불용어 처리
+ -반복해서 stop_words에 단어를 추가하면서 진행
+```{r}
+stop_words <- c('한','등', '수', '적', '년', '이', '들', '것', '있')
+
+l <- list()  #빈 리스트 생성
+for (word in unlist(nouns)) {
+  if (!word %in% stop_words) {
+    l <- append(l, word)
+  }
+}
+noun_freq <- table(unlist(l))
+v <- sort(noun_freq, decreasing = T)
+v100 <- v[1:100]
+wordcloud2(v100)
+```
+

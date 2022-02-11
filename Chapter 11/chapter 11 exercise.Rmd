@@ -1,0 +1,94 @@
+---
+title: "alice"
+author: "kangminji"
+date: '2021 5 6 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(RCurl)
+library(XML)
+library(stringr)
+library(tm)
+#install.packages("SnowballC")
+library(SnowballC)   #어간 추출 라이브러리
+library(wordcloud2)
+
+
+```
+
+```{r}
+html<- readLines("C:\\Workspace\\R\\maestro\\data\\alice.txt", encoding = 'UTF-8')
+head(html)
+
+html <- htmlParse(html, asText=T)
+alice <- xpathSApply(html,'//p', xmlValue)  
+length(alice)
+alice <- Corpus(VectorSource(alice))
+
+alice <- tm_map(alice, content_transformer(tolower))  # 소문자로 변환
+alice <- tm_map(alice, removeNumbers)  # 숫자 제거
+stop_words <- c(stopwords('en'),'said')
+alice <- tm_map(alice, removeWords, stop_words)  #불용어 제거
+alice <- tm_map(alice, removePunctuation)   #구둣점 제거
+alice <- tm_map(alice, stripWhitespace)   
+
+
+alice <- Corpus(VectorSource(alice))
+inspect(alice)
+
+```
+
+
+```{r}
+dtm <- DocumentTermMatrix(alice)
+dim(dtm)
+inspect(dtm)
+```
+
+```{r}
+m <- as.matrix(dtm)    #DTM list를 matrix로 변환
+v <- sort(colSums(m), decreasing = T)
+v[1:5]
+df <- data.frame(word=names(v), freq=v)
+head(df)
+
+```
+
+
+```{r}
+#install.packages("htmlwidgets")
+#install.packages("htmltools")
+#install.packages("htmltools", version='4.0.5')
+#install.packages("jsonlite")
+#install.packages("yaml")
+#install.packages("base64enc")
+library(htmlwidgets)
+library(htmltools)
+library(jsonlite)
+library(yaml)
+library(base64enc)
+```
+
+```{r}
+library(wordcloud2)
+wordcloud2(df)
+figPath = system.file("C:\\Users\\CPB06GameN\\Desktop\\alice_mask.png",package = "wordcloud2", df) 
+wordcloud2(df, figPath= "C:\\Users\\CPB06GameN\\Desktop\\alice_mask.png", backgroundColor = 'black')
+```
+
+
+
+
+
+
+
+
+
+
+
+
