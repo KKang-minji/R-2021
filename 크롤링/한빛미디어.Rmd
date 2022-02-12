@@ -1,0 +1,115 @@
+---
+title: "html"
+author: "kangminji"
+date: '2021 5 10 '
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+한빛미디어 사이트로 웹 크롤링 연습하기
+```{r}
+install.packages("rvest")
+library(rvest)
+library(stringr)
+library(dplyr)
+```
+
+웹사이트 읽기
+```{r}
+base_url <- 'https://www.hanbit.co.kr/media/books'
+sub_url <- 'new_book_list.html'
+url <- paste(base_url,sub_url, sep='/')
+url
+html <- read_html(url)
+```
+
+```{r}
+container <- html_node(html, '#container') #id="container"찾아라
+container
+book_list <- html_node(container, '.new_book_list_wrap')  #class='...'
+book_list
+sub_book_list <- html_node(book_list,'.sub_book_list_area')
+sub_book_list
+lis <- html_nodes(sub_book_list, 'li')    # <li> 모두 찾기
+lis
+```
+
+첫번째 책 정보 찾기
+```{r}
+li <- lis[1]  #첫번째 책
+
+#제목, 타이틀 뽑기
+info <- html_node(li, '.info')
+info
+title <- html_node(info, '.book_tit')
+title <- html_text(title)
+title
+
+#writer찾기  #한번에 찾기
+writer <- info %>% 
+  html_node('.book_writer') %>% 
+  html_text()
+writer
+```
+
+**데이터 분석할것이기에 csv파일로 만들어야함.**
+이페이지에 있는 데이터를 데이터 프레임으로 만들기
+(title, writer로 구성)
+```{r}
+title_vector <- c()
+writer_vector <- c()
+for (li in lis) {
+  info <- html_node(li, '.info')
+  title <- info %>% 
+    html_node('.book_tit') %>% 
+    html_text()
+  writer <- info %>% 
+    html_node('.book_writer') %>% 
+    html_text()
+  title_vector <- c(title_vector, title)
+  writer_vector <- c(writer_vector, writer)
+}
+new_books <- data.frame(
+  title=title_vector,
+  writer=writer_vector
+)
+View(new_books)
+```
+
+도서 세부내용 크롤링
+```{r}
+li <- lis[1]
+#세부내용 페이지 찾아오기
+href <- li %>% 
+  html_node('.info') %>% 
+  html_node('a') %>% 
+  html_attr('href')
+href
+
+book_url <- paste(base_url,href)
+book_url
+book_url <- paste(base_url,href,sep='/')
+book_url
+book_html <- read_html(book_url)
+book_html
+info_list <- html_node(book_html,'ul.info_list')
+lis <- html_nodes(info_list,'li')
+page_li <- lis[4]
+page <- html_node(page_li, 'span') %>% html_text()
+page
+# string 정수로 변환
+len <- nchar(page)
+len
+page <- as.integer(substring(page, 1,len-2))
+page
+```
+
+
+
+
+
+
+
